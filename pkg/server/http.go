@@ -13,7 +13,10 @@ func RegisterHandler(uc usecases) {
 	// HTTP Handler
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/checking", checkingHandler)
+
+	// Product
 	http.HandleFunc("/product", product.handleGetProduct)
+	http.HandleFunc("/product/list", product.handleGetProductList)
 }
 
 // indexHandler responds to requests with our greeting.

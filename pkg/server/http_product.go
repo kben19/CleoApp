@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -10,7 +9,8 @@ import (
 )
 
 const (
-	failedGetProductMsg = "Failed to get product"
+	failedGetProductMsg     = "Failed to get product"
+	failedGetProductListMsg = "Failed to get product list"
 )
 
 type HandlerProduct struct {
@@ -22,7 +22,7 @@ func InitHandlerProduct(productUsecase usecase.UsecaseProductItf) HandlerProduct
 }
 
 func (h HandlerProduct) handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.FormValue(common.IDParams))
+	id, err := strconv.Atoi(r.FormValue(common.IDParam))
 	if err != nil {
 		HTTPError(w, err, common.InvalidIDParameterMsg, http.StatusBadRequest)
 		return
@@ -33,16 +33,27 @@ func (h HandlerProduct) handleGetProduct(w http.ResponseWriter, r *http.Request)
 		HTTPError(w, err, failedGetProductMsg, http.StatusInternalServerError, id)
 		return
 	}
+	WriteHTTPResponse(w, res)
+	return
+}
 
-	raw, err := json.Marshal(res)
+func (h HandlerProduct) handleGetProductList(w http.ResponseWriter, r *http.Request) {
+	param, err := GetListParam(w, r)
 	if err != nil {
-		HTTPError(w, err, common.FailedToMarshal, http.StatusInternalServerError, res)
 		return
 	}
-	_, err = w.Write(raw)
+
+	err = param.ValidateProductParam()
 	if err != nil {
-		HTTPError(w, err, common.FailedToWriteResponse, http.StatusInternalServerError)
+		HTTPError(w, err, common.InvalidParamaterMsg, http.StatusBadRequest)
 		return
 	}
+
+	products, err := h.productUsecase.GetProductListWithPagination(param)
+	if err != nil {
+		HTTPError(w, err, failedGetProductListMsg, http.StatusInternalServerError)
+		return
+	}
+	WriteHTTPResponse(w, products)
 	return
 }

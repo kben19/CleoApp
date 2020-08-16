@@ -16,8 +16,9 @@ func Init(db *sql.DB) usecases {
 	useCase := usecases{}
 
 	productDomain := domain.InitDomainProduct(db)
+	categoryDomain := domain.InitDomainCategory(db)
 
-	useCase.product = usecase.InitUsecaseProduct(productDomain)
+	useCase.product = usecase.InitUsecaseProduct(productDomain, categoryDomain)
 
 	return useCase
 }
